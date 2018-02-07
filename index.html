@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Dokumentasi API OMNIPAY Payment Gateway</title>
+
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="js/highlight/styles/androidstudio.css">
+    <link rel="stylesheet" href="js/jquery.tocify.css">
+    <link rel="stylesheet" href="js/bootstrap-4b2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/my-style.css">
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-2">
+            <div id="logo">
+                <img src="http://via.placeholder.com/80x80" alt=""> OmniPay
+            </div>
+            <div id="toc"></div>
+        </div>
+        <div class="col-10">
+            <div id="text-desc">
+            </div>
+        </div>
+    </div>
+</div>
+<script src="js/jquery-3.3.1.min.js"></script>
+<script src="js/marked.js"></script>
+<script src="js/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+<script src="js/bootstrap-4b2/js/bootstrap.bundle.min.js"></script>
+<script src="js/jquery.tocify.min.js"></script>
+<script src="js/highlight/highlight.pack.js"></script>
+
+<script>
+    jQuery(function ($) {
+        $('#text-desc').load('content.md', function(content){
+            $('#text-desc').html(marked(content))
+
+            // syntax highlighting
+            $('pre code').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+
+            //Calls the tocify method on your HTML div.
+            $("#toc").tocify();
+        });
+    });
+</script>
+
+</body>
+</html>

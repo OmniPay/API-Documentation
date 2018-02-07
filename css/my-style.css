@@ -1,0 +1,47 @@
+#toc {
+    width: 299px;
+}
+
+#logo {
+    font-weight: bold;
+    font-size: 2em;
+    margin: 0.5em 0;
+}
+
+#text-desc h1, #text-desc h2, #text-desc h3 {
+    margin-right: 50%;
+    clear: both;
+    border-top: 1px solid green;
+    border-bottom: 1px solid green;
+    line-height: 2em;
+}
+
+#text-desc h1 {
+    border-top: none;
+}
+
+#text-desc p, #text-desc hr, #text-desc > ul, #text-desc > ol, #text-desc > table {
+    float: left;
+    width: 50%;
+    clear: left;
+}
+
+#text-desc > table {
+    width: 40%;
+    margin-bottom: 1rem;
+    border-collapse: collapse;
+}
+
+#text-desc > table td, #text-desc > table th {
+    border: 1px solid #ccc;
+    padding: 3px;
+}
+
+#text-desc {
+}
+
+#text-desc pre {
+    float: right;
+    width: 50%;
+    clear: right;
+}
