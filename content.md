@@ -11,6 +11,7 @@ Pengetahuan dasar:
 - Basis URL:
   - Production Environment: **https://secure.omnipay.co.id/OmniPay**
   - Development Environment: **https://dev.secure.omnipay.co.id/OmniPay**
+- Semua data yang dikirimkan adalah dalam bentuk **JSON**  
 - _Merchant ID_: merupakan id yang diberikan oleh OmniPay saat anda meregistrasikan akun merchant anda kepada kami. Merchant ID ini disediakan oleh **OmniPay**
 - _Order ID_: merupakan id yang anda gunakan untuk mengidentifikasikan pesanan/order dari web
     anda.
@@ -25,7 +26,7 @@ Pengetahuan dasar:
 
 ## Terima pembayaran Virtual Account
 
-**Request url: /api-v2/va**
+**Request url: /api-v2/va/index.php**
 
 Virtual Account adalah nomor akun yang diberikan oleh bank untuk dapat dilakukan proses transfer, baik transfer melalui ATM, Mobile Banking, SMS Banking, maupun Internet Banking.
 bila transfer sudah dilaksanakan maka Server OmniPay akan memanggil Callback URL web merchant bahwa pembayaran sudah dilakukan terhadap Order ID bersangkutan tersebut
@@ -76,6 +77,7 @@ $request->vcode = $request->amount . $request->merchantid .
     $request->orderid . $verify_key;
 
 // asumsi fungsi post sudah didefinisikan sebelumnya
+// fungsi post ini mengirimkan request POST dengan body berbentuk JSON
 $response = post($url . '/api-v2/va', $request);
 
 // proses response yang didapatkan seperti biasa, 
