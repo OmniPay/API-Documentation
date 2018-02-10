@@ -1,9 +1,5 @@
 # Teknis Integrasi system OmniPay
 
-**Update Log**
-- Yohan, 07 Feb 2018 : Initial V2 system integration
----------------------------------------------------------
-
 Berikut ini adalah cara untuk mengintegrasikan system pembayaran dalam website Anda
 
 Pengetahuan dasar:
@@ -116,3 +112,7 @@ Integrasi Instan adalah dimana merchant menampilkan halaman pemilihan metode-met
 
 Integrasi ini dapat dilakukan secara "Inline" yakni dimunculkan dalam halaman checkout website merchant, atau merchant merujuk kepada halaman khusus dari Omnipay untuk melakukan pembayaran
 disana
+
+## Update Log
+
+- Yohan, 07 Feb 2018 : Initial V2 system integration
