@@ -74,7 +74,7 @@ $request->vcode = $request->amount . $request->merchantid .
 
 // asumsi fungsi post sudah didefinisikan sebelumnya
 // fungsi post ini mengirimkan request POST dengan body berbentuk JSON
-$response = post($url . '/api-v2/va', $request);
+$response = post($url . '/api-v2/va/index.php', $request);
 
 // proses response yang didapatkan seperti biasa, 
 // response ini dalam bentuk json sesuai keterangan
