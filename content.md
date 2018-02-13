@@ -63,9 +63,9 @@ $request->orderid = '123';
 // setelah ditambahkan dengan fee virtual account
 // misalkan jumlah tagihan order adalah 10.000, maka amount = 10.000 + fee
 $request->amount = 15000;
-$request->bill_name = 'yohan';
-$request->bill_email = 'yohan@omnipay.co.id';
-$request->bill_mobile = '08986525365';
+$request->bill_name = 'test';
+$request->bill_email = 'test@omnipay.co.id';
+$request->bill_mobile = '08986512345';
 $request->bill_desc = 'testing va payment';
 $request->expiry_minute = 240;
 
