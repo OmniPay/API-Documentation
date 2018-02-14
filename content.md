@@ -7,7 +7,6 @@ Pengetahuan dasar:
 - Basis URL:
   - Production Environment: **https://secure.omnipay.co.id/OmniPay**
   - Development Environment: **https://dev.secure.omnipay.co.id/OmniPay**
-- Semua data yang dikirimkan adalah dalam bentuk **JSON**  
 - _Merchant ID_: merupakan id yang diberikan oleh OmniPay saat anda meregistrasikan akun merchant anda kepada kami. Merchant ID ini disediakan oleh **OmniPay**
 - _Order ID_: merupakan id yang anda gunakan untuk mengidentifikasikan pesanan/order dari web
     anda.
@@ -22,7 +21,7 @@ Pengetahuan dasar:
 
 ## Terima pembayaran Virtual Account
 
-**Request url: /api-v2/va/index.php**
+**Request url: _POST_ /api-v2/va/index.php**
 
 Virtual Account adalah nomor akun yang diberikan oleh bank untuk dapat dilakukan proses transfer, baik transfer melalui ATM, Mobile Banking, SMS Banking, maupun Internet Banking.
 bila transfer sudah dilaksanakan maka Server OmniPay akan memanggil Callback URL web merchant bahwa pembayaran sudah dilakukan terhadap Order ID bersangkutan tersebut
@@ -46,13 +45,8 @@ Langkah sederhananya adalah sebagai berikut:
 | provider | string | n | permata |
 | expiry_minute | integer | n | 240 |
 
-
-- vcode = md5(amount + merchantid + orderid + verfiy_key), vcode merupakan nilai md5 dari konkatenasi amount, merchantid, orderid, dan verify_key
-- provider merupakan pilihan bank penyedia virtual account, bisa diisi dengan permata/artajasa/bca/mandiri/cimb
-- expiry_minute merupakan nilai dalam menit untuk masa berlakunya virtual account, misal jam 10.00 transaksi dilakukan dan expiry_minute diisi 60, 
-maka sejak jam 11.00 virtual account tersebut sudah expired
-
 ```php
+<?php
 $url = 'https://secure.omnipay.co.id/OmniPay'
 $verify_key = '473597fa188235c13f7a336c3e365517';
 
@@ -80,6 +74,12 @@ $response = post($url . '/api-v2/va/index.php', $request);
 // response ini dalam bentuk json sesuai keterangan
 ```
 
+- vcode = md5(amount + merchantid + orderid + verfiy_key), vcode merupakan nilai md5 dari konkatenasi amount, merchantid, orderid, dan verify_key
+- provider merupakan pilihan bank penyedia virtual account, bisa diisi dengan permata/artajasa/bca/mandiri/cimb
+- expiry_minute merupakan nilai dalam menit untuk masa berlakunya virtual account, misal jam 10.00 transaksi dilakukan dan expiry_minute diisi 60, 
+maka sejak jam 11.00 virtual account tersebut sudah expired
+- Semua data yang dikirimkan adalah dalam bentuk **JSON**  
+
 **response** yang didapat adalah dalam bentuk json object dimana field-fieldnya adalah sebagai berikut
 
 | Field | Jenis | Keterangan |
@@ -100,15 +100,200 @@ dengan nomor unik tertentu kepada rekening bank yang sudah ditunjuk oleh OmniPay
 
 ## Terima pembayaran Kartu Kredit
 
-**!!!Dokumentasi masih on progress!!!**
+**Request URL : _GET_ /pay/{$merchantid}/**
 
-Menerima pembayaran kartu kredit Visa dan Mastercard
+Menerima pembayaran kartu kredit Visa dan Mastercard dilakukan pada halaman yang aman.
+Oleh karena itu, developer hanya perlu memberikan GET parameter
+yang nantinya akan di pergunakan dalam halaman pembayaran yang disediakan oleh **OmniPay**
+
+Parameter-parameter yang diperlukan adalah sebagai berikut:
+
+| Field | Jenis | Keterangan |
+| --- | --- | --- |
+| amount | Integer | Jumlah Tagihan (Termasuk fee) |
+| orderid | String | Nomor Order dari Merchant |
+| bill_name | String | Nama buyer |
+| bill_email | String | Email dari buyer |
+| bill_mobile | String | Nomor telepon buyer |
+| bill_desc | String | Keterangan tentang penjualan |
+| country | String | diisi "ID" |
+| returnurl | String | Url yang akan di notifikasi oleh sistem tunjukkan saat buyer menyelesaikan / membatalkan pembayaran |
+| vcode | String | md5(amount + merchantid + orderid + verfiy_key) |
+
+```php
+<?php
+$merchantid = 'marketingmolpay';
+$verifyKey = '473597fa188235c13f7a336c3e365517';
+$url = "https://secure.omnipay.co.id/OmniPay/pay/$merchantid/?";
+
+$amount = 15000;
+$orderid = 'your ourder id';
+$name = 'very cool name';
+$email = 'demo@omnipay.co.id';
+$mobile = '08987171771';
+$description = 'This is only a test';
+$returnurl = 'http://my-return-url.domain.tld/return.php';
+$vcode = md5($amount . $merchantid . $orderid . $verifyKey);
+
+// since the parameter will be used in a GET request, we need to
+// urlencode them
+$amount = urlencode($amount);
+$orderid = urlencode($orderid);
+$name = urlencode($name);
+$email = urlencode($email);
+$mobile = urlencode($mobile);
+$description = urlencode($description);
+$returnurl = urlencode($returnurl);
+
+// show that link anywhere the customer should pay
+echo "<a href=\"$url"; 
+echo "amount=$amount&"; 
+echo "orderid=$orderid&"; 
+echo "bill_name=$name&"; 
+echo "bill_email=$email&"; 
+echo "bill_mobile=$mobile&"; 
+echo "bill_desc=$description&"; 
+echo "country=ID"; 
+echo "returnurl=$returnurl&"; 
+echo "vcode=$vcode&";  
+echo "langcode=id\"> Pay Now </a>";      
+```
+
+Contoh PHP berikut ini merupakan contoh menampilkan sebuah link yang nantinya akan di _click_ oleh _buyer_ untuk
+melakukan pembayaran dengan menggunakan Kartu Kredit
+
+### Notifikasi pembayaran Kartu Kredit
+
+#### RETURN URL
+
+Setelah buyer click pada tombol bayar, mereka akan diarahkan pada halaman OmniPay untuk memproses pembayaran kartu kredit
+buyer, setelah buyer menyelesaikan pembayaran, maka server OmniPay akan melakukan POST request kepada *returnurl* yang 
+telah di definisikan oleh merchant sebelumnya
+
+Return URL tersebut diharapkan untuk memproses data POST sebagai berikut:
+
+| Field | Jenis | Keterangan |
+|---|---|---|
+|domain|String|The merchant id|
+|amount|Integer|The transaction amount in one bill|
+|orderid|String|The bill/invoice number|
+|appcode|String|Bank approval code| 
+|tranID|String|Transaction ID for tracking purpose domain Alpha-numeric  Merchant ID|
+|status|00 or 11|Status of transaction: 00 - success 11 - failure| 
+|error_code|String|Error code for failure transaction (if any)| 
+|error_desc|String|Error description for failure transaction (if any)| 
+|currency|String|Depends on payment channel| 
+|paydate|Date/Time YYYY-MM-DD HH:mm:ss|Date time of the transaction| 
+|channel|String|Depends to the payment method| 
+|skey|String|Hashed string to verify whether the transaction is from a valid source. Verify Key is required| 
+
+```php
+<?php 
+ 
+$verifyKey ="473597fa188235c13f7a336c3e365517";
+
+$tranID = $_POST['tranID'];
+$orderid = $_POST['orderid'];
+$status = $_POST['status'];
+$domain = $_POST['domain'];
+$amount = $_POST['amount'];
+$currency = $_POST['currency'];
+$appcode = $_POST['appcode'];
+$paydate = $_POST['paydate'];
+$skey = $_POST['skey']; 
+
+// check apakah post ini benar dari OmniPay server
+$key0 = md5( $tranID . $orderid.$status.$domain.$amount.$currency ); 
+$key1 = md5( $paydate.$domain.$key0.$appcode.$verifyKey );
+
+if( $skey === $key1 ) {
+    // we are having a valid transaction return, let's check for the status..
+    if($status === '00') {
+        // payment is successfull, update the order accordingly
+        // important!!! check the orderid, check the amount!
+    } else {
+        // payment is not success.. perhaps check for the POSTed error_code and error_desc 
+    }
+} else {
+    // Invalid security key, it is possible that the data is not sent from OmniPay's server
+    // !!! Beware !!!
+}
+ 
+``` 
+
+#### CALLBACK URL
+
+Ada kalanya dimana returnurl tidak dipergunakan, dalam hal ini misalkan Buyer langsung membayar lewat tagihan Invoice (email).
+Merchant bisa memanfaatkan fasilitas CALLBACK URL untuk memantau apakah suatu invoice sudah dibayarkan atau belum.
+
+Fasilitas callback url ini harus diaktifkan terlebih dahulu di dalam dashboard merchant pada halaman https://secure.omnipay.co.id/OmniPay
+
+Server OmniPay melakukan callback dengan request berbentuk **POST**. Dari **POST** request tersebut diharapkan didapatkan response yang **HANYA** berisi
+
+`CBTOKEN:MPSTATOK`
+
+Isi callback tersebut adalah sebagai berikut:
+
+| Field | Jenis | Keterangan |
+|---|---|---|
+|nbcb|Integer|Selalu berisi **1**|
+|domain|String|The merchant id|
+|amount|Integer|The transaction amount in one bill|
+|orderid|String|The bill/invoice number|
+|appcode|String|Bank approval code| 
+|tranID|String|Transaction ID for tracking purpose domain Alpha-numeric  Merchant ID|
+|status|00 or 11|Status of transaction: 00 - success 11 - failure| 
+|error_code|String|Error code for failure transaction (if any)| 
+|error_desc|String|Error description for failure transaction (if any)| 
+|currency|String|Depends on payment channel| 
+|paydate|Date/Time YYYY-MM-DD HH:mm:ss|Date time of the transaction| 
+|skey|String|Hashed string to verify whether the transaction is from a valid source. Verify Key is required| 
+
+```php
+<?php 
+ 
+$verifyKey ="473597fa188235c13f7a336c3e365517";
+
+$nbcb = $_POST['nbcb'];
+$tranID = $_POST['tranID'];
+$orderid = $_POST['orderid'];
+$status = $_POST['status'];
+$domain = $_POST['domain'];
+$amount = $_POST['amount'];
+$currency = $_POST['currency'];
+$appcode = $_POST['appcode'];
+$paydate = $_POST['paydate'];
+$skey = $_POST['skey']; 
+
+// check apakah post ini benar dari OmniPay server
+$key0 = md5( $tranID . $orderid.$status.$domain.$amount.$currency ); 
+$key1 = md5( $paydate.$domain.$key0.$appcode.$verifyKey );
+
+if( $skey === $key1 ) {
+    // response ini diperlukan oleh OmniPay server untuk mencatat bahwa server merchant sudah menerima notifikasi
+    // callback sebuah pembayaran 
+    echo "CBTOKEN:MPSTATOK";
+    
+    // we are having a valid transaction return, let's check for the status..
+    if($status === '00') {
+        // payment is successfull, update the order accordingly
+        // important!!! check the orderid, check the amount!
+    } else {
+        // payment is not success.. perhaps check for the POSTed error_code and error_desc 
+    }
+} else {
+    // Invalid security key, it is possible that the data is not sent from OmniPay's server
+    // !!! Beware !!!
+}
+
+```
+
 
 ## Integrasi Inline
 
 **!!!Dokumentasi masih on progress!!!**
 
-Integrasi Instan adalah dimana merchant menampilkan halaman pemilihan metode-metode pembayaran yang disediakan oleh OmniPay secara langsung dalam halaman website checkout
+Integrasi Inline adalah dimana merchant menampilkan halaman pemilihan metode-metode pembayaran yang disediakan oleh OmniPay secara langsung dalam halaman website checkout
 
 Integrasi ini dapat dilakukan secara "Inline" yakni dimunculkan dalam halaman checkout website merchant, atau merchant merujuk kepada halaman khusus dari Omnipay untuk melakukan pembayaran
 disana
@@ -116,3 +301,4 @@ disana
 ## Update Log
 
 - Yohan, 07 Feb 2018 : Initial V2 system integration
+- Yohan, 13 Feb 2018 : Initial doc Credit Card integration

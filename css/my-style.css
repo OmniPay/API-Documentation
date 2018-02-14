@@ -1,11 +1,16 @@
 #toc {
-    width: 299px;
+    /*width: 299px;*/
 }
 
 #logo {
     font-weight: bold;
     font-size: 2em;
     margin: 0.5em 0;
+}
+
+#logo img {
+    width: 100%;
+    height: auto;
 }
 
 #text-desc h1, #text-desc h2, #text-desc h3 {
@@ -18,6 +23,10 @@
 
 #text-desc h1 {
     border-top: none;
+}
+
+#text-desc h4 {
+    clear: both;
 }
 
 #text-desc p, #text-desc hr, #text-desc > ul, #text-desc > ol, #text-desc > table {
@@ -44,4 +53,8 @@
     float: right;
     width: 50%;
     clear: right;
+}
+
+#toc ul.nav {
+    display: block;
 }
