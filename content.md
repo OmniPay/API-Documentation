@@ -5,8 +5,7 @@ Berikut ini adalah cara untuk mengintegrasikan system pembayaran dalam website A
 Pengetahuan dasar:
 
 - Basis URL:
-  - Production Environment: **https://secure.omnipay.co.id/OmniPay**
-  - Development Environment: **https://dev.secure.omnipay.co.id/OmniPay**
+  - Production Environment: **https://secure.omnipay.co.id/OmniPay**  
 - _Merchant ID_: merupakan id yang diberikan oleh OmniPay saat anda meregistrasikan akun merchant anda kepada kami. Merchant ID ini disediakan oleh **OmniPay**
 - _Order ID_: merupakan id yang anda gunakan untuk mengidentifikasikan pesanan/order dari web
     anda.
@@ -91,13 +90,6 @@ maka sejak jam 11.00 virtual account tersebut sudah expired
 | duedate | String | tanggal dan waktu dimana virtual account tidak dapat dipergunakan lagi
 
 
-## Terima pembayaran Transfer Bank
-
-**!!!Dokumentasi masih on progress!!!**
-
-Metode transfer **tanpa** menggunakan nomor akun Virtual, dalam hal ini pembeli akan mentransfer sejumlah uang
-dengan nomor unik tertentu kepada rekening bank yang sudah ditunjuk oleh OmniPay, metode ini bisa dipilih bila dikehendaki adanya biaya yang lebih murah daripada metode Virtual Account
-
 ## Terima pembayaran Kartu Kredit
 
 **Request URL : _GET_ /pay/{$merchantid}/**
@@ -170,7 +162,7 @@ Setelah buyer click pada tombol bayar, mereka akan diarahkan pada halaman OmniPa
 buyer, setelah buyer menyelesaikan pembayaran, maka server OmniPay akan melakukan POST request kepada *returnurl* yang 
 telah di definisikan oleh merchant sebelumnya
 
-Return URL tersebut diharapkan untuk memproses data POST sebagai berikut:
+Return URL tersebut akan mendapatkan request dengan field POST sebagai berikut:
 
 | Field | Jenis | Keterangan |
 |---|---|---|
@@ -288,15 +280,6 @@ if( $skey === $key1 ) {
 
 ```
 
-
-## Integrasi Inline
-
-**!!!Dokumentasi masih on progress!!!**
-
-Integrasi Inline adalah dimana merchant menampilkan halaman pemilihan metode-metode pembayaran yang disediakan oleh OmniPay secara langsung dalam halaman website checkout
-
-Integrasi ini dapat dilakukan secara "Inline" yakni dimunculkan dalam halaman checkout website merchant, atau merchant merujuk kepada halaman khusus dari Omnipay untuk melakukan pembayaran
-disana
 
 ## Update Log
 
