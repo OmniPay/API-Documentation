@@ -58,3 +58,7 @@
 #toc ul.nav {
     display: block;
 }
+
+li.tocify-item.active {
+    font-weight: bold;
+}
