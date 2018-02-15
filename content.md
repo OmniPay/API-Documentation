@@ -46,7 +46,7 @@ Langkah sederhananya adalah sebagai berikut:
 
 ```php
 <?php
-$url = 'https://secure.omnipay.co.id/OmniPay'
+$url = 'https://secure.omnipay.co.id/OmniPay';
 $verify_key = '473597fa188235c13f7a336c3e365517';
 
 $request = new stdClass();
@@ -62,8 +62,8 @@ $request->bill_mobile = '08986512345';
 $request->bill_desc = 'testing va payment';
 $request->expiry_minute = 240;
 
-$request->vcode = $request->amount . $request->merchantid . 
-    $request->orderid . $verify_key;
+$request->vcode = md5($request->amount . $request->merchantid . 
+    $request->orderid . $verify_key);
 
 // asumsi fungsi post sudah didefinisikan sebelumnya
 // fungsi post ini mengirimkan request POST dengan body berbentuk JSON
