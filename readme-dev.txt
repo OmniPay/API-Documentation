@@ -1,4 +1,4 @@
 menggunakan liteserver:
 npm install -g lite-server
 
-bundle-backup untuk simpan zip files dari assets
+folder bundle-backup untuk simpan zip files dari assets (file original js dan css assets)
