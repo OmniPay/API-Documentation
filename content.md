@@ -23,7 +23,7 @@ Pengetahuan dasar:
 **Request url: _POST_ /api-v2/va/index.php**
 
 Virtual Account adalah nomor akun yang diberikan oleh bank untuk dapat dilakukan proses transfer, baik transfer melalui ATM, Mobile Banking, SMS Banking, maupun Internet Banking.
-bila transfer sudah dilaksanakan maka Server OmniPay akan memanggil Callback URL web merchant bahwa pembayaran sudah dilakukan terhadap Order ID bersangkutan tersebut
+bila transfer sudah dilaksanakan maka Server OmniPay akan memanggil Callback?Return URL web merchant bahwa pembayaran sudah dilakukan terhadap Order ID bersangkutan tersebut
 
 Langkah sederhananya adalah sebagai berikut:
 1. Webserver Merchant request nomor VA (Virtual Account) ke server OmniPay
@@ -33,16 +33,17 @@ Langkah sederhananya adalah sebagai berikut:
 
 | Field | Tipe Data | Required | Default |
 |---|:---:|:---:|---|
-| merchantid | string | y | - |
-| orderid | string | y | - |
-| amount | integer | y | - |
-| bill_name | string | y | - |
-| bill_email | string | y | - |
-| bill_mobile | string | y | - |
-| bill_desc | string | y | - |
-| vcode | string | y | - |
-| provider | string | n | permata |
-| expiry_minute | integer | n | 240 |
+| returnurl | string | tidak | - |
+| merchantid | string | ya | - |
+| orderid | string | ya | - |
+| amount | integer | ya | - |
+| bill_name | string | ya | - |
+| bill_email | string | ya | - |
+| bill_mobile | string | ya | - |
+| bill_desc | string | ya | - |
+| vcode | string | ya | - |
+| provider | string | tidak | permata |
+| expiry_minute | integer | tidak | 240 |
 
 ```php
 <?php
@@ -50,6 +51,7 @@ $url = 'https://secure.omnipay.co.id/OmniPay';
 $verify_key = '473597fa188235c13f7a336c3e365517';
 
 $request = new stdClass();
+$request->returnurl = 'https://my-return-url.com/return/omnipay';
 $request->merchantid = 'marketingmolpay';
 $request->orderid = '123';
 // amount ini adalah jumlah yang ditagihkan kepada buyer 
@@ -66,7 +68,7 @@ $request->vcode = md5($request->amount . $request->merchantid .
     $request->orderid . $verify_key);
 
 // asumsi fungsi post sudah didefinisikan sebelumnya
-// fungsi post ini mengirimkan request POST dengan body berbentuk JSON
+// fungsi post ini mengirimkan request POST dengan body berbentuk JSON dari $request
 $response = post($url . '/api-v2/va/index.php', $request);
 
 // proses response yang didapatkan seperti biasa, 
@@ -100,17 +102,18 @@ yang nantinya akan di pergunakan dalam halaman pembayaran yang disediakan oleh *
 
 Parameter-parameter yang diperlukan adalah sebagai berikut:
 
-| Field | Jenis | Keterangan |
+| Field | Jenis | Required | Keterangan |
 | --- | --- | --- |
-| amount | Integer | Jumlah Tagihan (Termasuk fee) |
-| orderid | String | Nomor Order dari Merchant |
-| bill_name | String | Nama buyer |
-| bill_email | String | Email dari buyer |
-| bill_mobile | String | Nomor telepon buyer |
-| bill_desc | String | Keterangan tentang penjualan |
-| country | String | diisi "ID" |
-| returnurl | String | Url yang akan di notifikasi oleh sistem tunjukkan saat buyer menyelesaikan / membatalkan pembayaran |
-| vcode | String | md5(amount + merchantid + orderid + verfiy_key) |
+| amount | Integer | Ya | Jumlah Tagihan (Termasuk fee) |
+| cur | String | Tidak | Mata uang, bila tidak diisi, default IDR |
+| orderid | String | Ya | Nomor Order dari Merchant |
+| bill_name | String | Ya | Nama buyer |
+| bill_email | String | Ya | Email dari buyer |
+| bill_mobile | String | Ya | Nomor telepon buyer |
+| bill_desc | String | Ya | Keterangan tentang penjualan |
+| country | String | Ya | diisi "ID" |
+| returnurl | String | Tidak | Url yang akan di notifikasi oleh sistem tunjukkan saat buyer menyelesaikan / membatalkan pembayaran |
+| vcode | String | Ya | md5(amount + merchantid + orderid + verfiy_key) |
 
 ```php
 <?php
@@ -119,6 +122,7 @@ $verifyKey = '473597fa188235c13f7a336c3e365517';
 $url = "https://secure.omnipay.co.id/OmniPay/pay/$merchantid/?";
 
 $amount = 15000;
+$cur = 'IDR';
 $orderid = 'your ourder id';
 $name = 'very cool name';
 $email = 'demo@omnipay.co.id';
@@ -130,6 +134,7 @@ $vcode = md5($amount . $merchantid . $orderid . $verifyKey);
 // since the parameter will be used in a GET request, we need to
 // urlencode them
 $amount = urlencode($amount);
+$cur = urlencode($cur);
 $orderid = urlencode($orderid);
 $name = urlencode($name);
 $email = urlencode($email);
@@ -140,6 +145,7 @@ $returnurl = urlencode($returnurl);
 // show that link anywhere the customer should pay
 echo "<a href=\"$url"; 
 echo "amount=$amount&"; 
+echo "cur=$cur&"; 
 echo "orderid=$orderid&"; 
 echo "bill_name=$name&"; 
 echo "bill_email=$email&"; 
@@ -174,10 +180,14 @@ Return URL tersebut akan mendapatkan request dengan field POST sebagai berikut:
 |status|00 or 11|Status of transaction: 00 - success 11 - failure| 
 |error_code|String|Error code for failure transaction (if any)| 
 |error_desc|String|Error description for failure transaction (if any)| 
-|currency|String|Depends on payment channel| 
+|currency|String|Mata uang pembayaran (selalu IDR)| 
 |paydate|Date/Time YYYY-MM-DD HH:mm:ss|Date time of the transaction| 
 |channel|String|Depends to the payment method| 
 |skey|String|Hashed string to verify whether the transaction is from a valid source. Verify Key is required| 
+|fx_amount|Number|Jumlah yang dibayarkan bila currency tdk dalam IDR (2 desimal)|
+|fx_currency|String|Mata uang bila tagihan bukan dalam IDR|
+|fx_rate|Number|Nilai tukar terhadap misal bila fx_currency = USD, maka nilainya adalah nilai 1USD dalam IDR (4 desimal)|
+|fx_skey|String|md5(verifyKey . fx_amount . fx_currency . fx_rate . tranID . orderid)|
 
 ```php
 <?php 
@@ -192,13 +202,26 @@ $amount = $_POST['amount'];
 $currency = $_POST['currency'];
 $appcode = $_POST['appcode'];
 $paydate = $_POST['paydate'];
-$skey = $_POST['skey']; 
+$skey = $_POST['skey'];
+$fx_amount = $_POST['fx_amount'];
+$fx_currency = $_POST['fx_currency'];
+$fx_rate = $_POST['fx_rate'];
+$fx_key = $_POST['fx_key'];
 
 // check apakah post ini benar dari OmniPay server
 $key0 = md5( $tranID . $orderid.$status.$domain.$amount.$currency ); 
 $key1 = md5( $paydate.$domain.$key0.$appcode.$verifyKey );
 
-if( $skey === $key1 ) {
+// asumsi bahwa pembayaran dalam IDR, jadi default pemeriksaan parameter fx adalah "true"
+$fx_ok = true;
+
+// kalau server mengirimkan $_POST['fx_key'] artinya tagihan tidak dalam IDR
+if(!empty($fx_key)) {
+    $calc_fx_key = md5($verifyKey . $fx_amount . $fx_currency . $fx_rate . $tranID . $orderid);    
+    $fx_ok = $calc_fx_key === $fx_ok;
+}
+
+if( $skey === $key1 && $fx_ok) {
     // we are having a valid transaction return, let's check for the status..
     if($status === '00') {
         // payment is successfull, update the order accordingly
@@ -237,9 +260,13 @@ Isi callback tersebut adalah sebagai berikut:
 |status|00 or 11|Status of transaction: 00 - success 11 - failure| 
 |error_code|String|Error code for failure transaction (if any)| 
 |error_desc|String|Error description for failure transaction (if any)| 
-|currency|String|Depends on payment channel| 
+|currency|String|Mata uang pembayaran| 
 |paydate|Date/Time YYYY-MM-DD HH:mm:ss|Date time of the transaction| 
 |skey|String|Hashed string to verify whether the transaction is from a valid source. Verify Key is required| 
+|fx_amount|Number|Jumlah yang dibayarkan bila currency tdk dalam IDR (2 desimal)|
+|fx_currency|String|Mata uang bila tagihan bukan dalam IDR|
+|fx_rate|Number|Nilai tukar terhadap misal bila fx_currency = USD, maka nilainya adalah nilai 1USD dalam IDR (4 desimal)|
+|fx_skey|String|md5(verifyKey . fx_amount . fx_currency . fx_rate . tranID . orderid)|
 
 ```php
 <?php 
@@ -257,11 +284,25 @@ $appcode = $_POST['appcode'];
 $paydate = $_POST['paydate'];
 $skey = $_POST['skey']; 
 
+$fx_amount = $_POST['fx_amount'];
+$fx_currency = $_POST['fx_currency'];
+$fx_rate = $_POST['fx_rate'];
+$fx_key = $_POST['fx_key'];
+
 // check apakah post ini benar dari OmniPay server
 $key0 = md5( $tranID . $orderid.$status.$domain.$amount.$currency ); 
 $key1 = md5( $paydate.$domain.$key0.$appcode.$verifyKey );
 
-if( $skey === $key1 ) {
+// asumsi bahwa pembayaran dalam IDR, jadi default pemeriksaan parameter fx adalah "true"
+$fx_ok = true;
+
+// kalau server mengirimkan $_POST['fx_key'] artinya tagihan tidak dalam IDR
+if(!empty($fx_key)) {
+    $calc_fx_key = md5($verifyKey . $fx_amount . $fx_currency . $fx_rate . $tranID . $orderid);    
+    $fx_ok = $calc_fx_key === $fx_ok;
+}
+
+if( $skey === $key1 && $fx_ok) {
     // response ini diperlukan oleh OmniPay server untuk mencatat bahwa server merchant sudah menerima notifikasi
     // callback sebuah pembayaran 
     echo "CBTOKEN:MPSTATOK";
@@ -285,3 +326,4 @@ if( $skey === $key1 ) {
 
 - Yohan, 07 Feb 2018 : Initial V2 system integration
 - Yohan, 13 Feb 2018 : Initial doc Credit Card integration
+- Yohan, 25 July 2018 : Menambahkan verifikasi untuk transaksi dengan AMOUNT bukan dalam IDR, Menambahkan parameter returnurl
