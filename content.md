@@ -160,7 +160,7 @@ echo "langcode=id\"> Pay Now </a>";
 Contoh PHP berikut ini merupakan contoh menampilkan sebuah link yang nantinya akan di _click_ oleh _buyer_ untuk
 melakukan pembayaran dengan menggunakan Kartu Kredit
 
-### Notifikasi pembayaran Kartu Kredit
+## Notifikasi pembayaran
 
 #### RETURN URL
 
@@ -194,6 +194,7 @@ Return URL tersebut akan mendapatkan request dengan field POST sebagai berikut:
  
 $verifyKey ="473597fa188235c13f7a336c3e365517";
 
+// verify signature here
 $tranID = $_POST['tranID'];
 $orderid = $_POST['orderid'];
 $status = $_POST['status'];
@@ -203,35 +204,42 @@ $currency = $_POST['currency'];
 $appcode = $_POST['appcode'];
 $paydate = $_POST['paydate'];
 $skey = $_POST['skey'];
+$key0 = md5($tranID . $orderid . $status . $domain . $amount . $currency);
+$key1 = md5($paydate . $domain . $key0 . $appcode . $verifyKey);
+
 $fx_amount = $_POST['fx_amount'];
 $fx_currency = $_POST['fx_currency'];
 $fx_rate = $_POST['fx_rate'];
-$fx_key = $_POST['fx_key'];
+$fx_key = $_POST['fx_skey'];
 
-// check apakah post ini benar dari OmniPay server
-$key0 = md5( $tranID . $orderid.$status.$domain.$amount.$currency ); 
-$key1 = md5( $paydate.$domain.$key0.$appcode.$verifyKey );
+// we need to check this values
+$check_amount = $amount;
+$check_currency = $currency;
 
 // asumsi bahwa pembayaran dalam IDR, jadi default pemeriksaan parameter fx adalah "true"
 $fx_ok = true;
 
-// kalau server mengirimkan $_POST['fx_key'] artinya tagihan tidak dalam IDR
-if(!empty($fx_key)) {
-    $calc_fx_key = md5($verifyKey . $fx_amount . $fx_currency . $fx_rate . $tranID . $orderid);    
-    $fx_ok = $calc_fx_key === $fx_ok;
+// kalau server mengirimkan $_POST['fx_key'] artinya tagihan tidak dalam IDR,
+// tetapi uang yg diterima dalam BANK, SELALU dalam IDR
+if (!empty($fx_key)) {
+    $calc_fx_key = md5($verifyKey . $fx_amount . $fx_currency . $fx_rate . $tranID . $orderid);
+    $fx_ok = ($calc_fx_key === $fx_key);
+
+    // we need to check amount and currency before it gets exchanged to IDR
+    $check_amount = $fx_amount;
+    $check_currency = $fx_currency;
+
+    // check amount paid in IDR
+    if ($fx_ok) {
+        // deviasi 5 rupiah
+        $fx_ok = abs($amount - $fx_amount * $fx_rate) < 5.0;
+    }
 }
 
-if( $skey === $key1 && $fx_ok) {
-    // we are having a valid transaction return, let's check for the status..
-    if($status === '00') {
-        // payment is successfull, update the order accordingly
-        // important!!! check the orderid, check the amount!
-    } else {
-        // payment is not success.. perhaps check for the POSTed error_code and error_desc 
-    }
+if ($skey === $key1 && $fx_ok) {
+    // proses pembayaran..
 } else {
-    // Invalid security key, it is possible that the data is not sent from OmniPay's server
-    // !!! Beware !!!
+    throw new Exception("INVALID NOTIFICATION!");
 }
  
 ``` 
