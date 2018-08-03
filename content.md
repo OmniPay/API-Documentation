@@ -161,14 +161,17 @@ Contoh PHP berikut ini merupakan contoh menampilkan sebuah link yang nantinya ak
 melakukan pembayaran dengan menggunakan Kartu Kredit
 
 ## Notifikasi pembayaran
+Programmer dapat menambahkan parameter returnurl untuk mendapatkan hasil dari sebuah siklus pembayaran.
+Notifikasi ini berupa POST request dari server Omnipay kepada server merchant. Sebagai parameter keamanan, **sangat penting** untuk
+dilakukan pengecekan terhadap parameter **skey**. Apabila merchant melakukan penagihan dengan mata uang **selain IDR** lakukanlah pengecekan
+juga terhadap parameter **fx_skey**
 
 #### RETURN URL
 
-Setelah buyer click pada tombol bayar, mereka akan diarahkan pada halaman OmniPay untuk memproses pembayaran kartu kredit
-buyer, setelah buyer menyelesaikan pembayaran, maka server OmniPay akan melakukan POST request kepada *returnurl* yang 
-telah di definisikan oleh merchant sebelumnya
+setelah buyer menyelesaikan pembayaran, maka server OmniPay akan melakukan POST request kepada *returnurl* yang 
+telah di definisikan oleh merchant sebelumnya.
 
-Return URL tersebut akan mendapatkan request dengan field POST sebagai berikut:
+Return URL tersebut akan mendapatkan request dengan field-field POST sebagai berikut:
 
 | Field | Jenis | Keterangan |
 |---|---|---|
@@ -180,7 +183,7 @@ Return URL tersebut akan mendapatkan request dengan field POST sebagai berikut:
 |status|00 or 11|Status of transaction: 00 - success 11 - failure| 
 |error_code|String|Error code for failure transaction (if any)| 
 |error_desc|String|Error description for failure transaction (if any)| 
-|currency|String|Mata uang pembayaran (selalu IDR)| 
+|currency|String|Mata uang pembayaran (selalu *IDR*)| 
 |paydate|Date/Time YYYY-MM-DD HH:mm:ss|Date time of the transaction| 
 |channel|String|Depends to the payment method| 
 |skey|String|Hashed string to verify whether the transaction is from a valid source. Verify Key is required| 

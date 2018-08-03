@@ -38,7 +38,7 @@
 
 <script>
     jQuery(function ($) {
-        $('#text-desc').load('content.md', function(content){
+        $('#text-desc').load('content.md?v=1', function(content){
             $('#text-desc').html(marked(content))
 
             // syntax highlighting
