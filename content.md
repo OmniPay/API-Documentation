@@ -33,7 +33,7 @@ Langkah sederhananya adalah sebagai berikut:
 
 | Field | Tipe Data | Required | Default |
 |---|:---:|:---:|---|
-| returnurl | string | tidak | - |
+| returnurl | string | ya | - |
 | merchantid | string | ya | - |
 | orderid | string | ya | - |
 | amount | integer | ya | - |
@@ -76,7 +76,7 @@ $response = post($url . '/api-v2/va/index.php', $request);
 ```
 
 - vcode = md5(amount + merchantid + orderid + verfiy_key), vcode merupakan nilai md5 dari konkatenasi amount, merchantid, orderid, dan verify_key
-- provider merupakan pilihan bank penyedia virtual account, bisa diisi dengan permata/artajasa/bca/mandiri/cimb
+- provider merupakan pilihan bank penyedia virtual account, bisa diisi dengan permata/artajasa/_bca_/_mandiri_/cimb
 - expiry_minute merupakan nilai dalam menit untuk masa berlakunya virtual account, misal jam 10.00 transaksi dilakukan dan expiry_minute diisi 60, 
 maka sejak jam 11.00 virtual account tersebut sudah expired
 - Semua data yang dikirimkan adalah dalam bentuk **JSON**  
@@ -90,6 +90,41 @@ maka sejak jam 11.00 virtual account tersebut sudah expired
 | date | String | tanggal dan waktu tercatatnya transaksi |
 | amount | Integer | Jumlah yang harus dibayarkan |
 | duedate | String | tanggal dan waktu dimana virtual account tidak dapat dipergunakan lagi
+
+## Terima pembayaran Transfer Manual
+
+**Request url: _POST_ /api-v2/tm/index.php**
+
+Transfer manual merupakan cara pembayaran dengan menggunakan angka unik sebagai identifikasi transfer yang masuk
+
+Langkah sederhananya adalah sebagai berikut:
+1. Webserver Merchant request *jumlah transfer* yang ingin di deteksi ke server OmniPay
+2. Server OmniPay akan memberikan *jumlah transfer* yang harus dilakukan oleh buyer berikut dengan bank-bank yang didukung
+3. Webserver Merchant menampilkan jumlah transfer berikut daftar bank yang didukung ini dan batas waktu pembayarannya
+4. Buyer di website merchant dapat melakukan pembayaran melalui ATM, Mobile Banking, maupun Internet Banking dengan memilih transfer ke nomor rekening bank-bank yang didukung tersebut, dan *angka transfer harus tepat*
+
+| Field | Tipe Data | Required | Default |
+|---|:---:|:---:|---|
+| returnurl | string | ya | - |
+| merchantid | string | ya | - |
+| orderid | string | ya | - |
+| amount | integer | ya | - |
+| bill_name | string | ya | - |
+| bill_email | string | ya | - |
+| bill_mobile | string | ya | - |
+| bill_desc | string | ya | - |
+| vcode | string | ya | - |
+| expiry_minute | integer | tidak | 240 |
+
+**response** yang didapat adalah dalam bentuk json object dimana field-fieldnya adalah sebagai berikut
+
+| Field | Jenis | Keterangan |
+| --- | --- | --- |
+| date | String | tanggal dan waktu tercatatnya transaksi |
+| original_amount | Integer | JUmlah tagihan tanpa angka unik
+| amount | Integer | Jumlah yang harus ditransfer
+| duedate | String | tanggal dan waktu dimana virtual account tidak dapat dipergunakan lagi
+| banks | Array | daftar bank yang didukung beserta keterangan yang diperlukan
 
 
 ## Terima pembayaran Kartu Kredit
@@ -335,6 +370,7 @@ if( $skey === $key1 && $fx_ok) {
 
 ## Update Log
 
-- Yohan, 07 Feb 2018 : Initial V2 system integration
-- Yohan, 13 Feb 2018 : Initial doc Credit Card integration
+- Yohan, 20 October 2018 : Menambahkan keterangan Tranfer Manual
 - Yohan, 25 July 2018 : Menambahkan verifikasi untuk transaksi dengan AMOUNT bukan dalam IDR, Menambahkan parameter returnurl
+- Yohan, 13 Feb 2018 : Initial doc Credit Card integration
+- Yohan, 07 Feb 2018 : Initial V2 system integration
