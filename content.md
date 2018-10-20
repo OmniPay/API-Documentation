@@ -114,7 +114,7 @@ Langkah sederhananya adalah sebagai berikut:
 | bill_mobile | string | ya | - |
 | bill_desc | string | ya | - |
 | vcode | string | ya | - |
-| expiry_minute | integer | tidak | 240 |
+| expiry_minute | integer | tidak | 4320 (3 hari) |
 
 **response** yang didapat adalah dalam bentuk json object dimana field-fieldnya adalah sebagai berikut
 
